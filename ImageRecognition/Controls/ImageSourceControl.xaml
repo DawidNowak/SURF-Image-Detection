@@ -1,0 +1,16 @@
+﻿<UserControl x:Class="ImageRecognition.Controls.ImageSourceControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="ImageSrc">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="70"/>
+            <ColumnDefinition Width="230"/>
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Text="{Binding Text, ElementName=ImageSrc}"/>
+        <TextBox Grid.Column="1" IsEnabled="False" Text="{Binding Path, ElementName=ImageSrc}" ToolTip="{Binding Path, ElementName=imageSourceControl}" ToolTipService.ShowOnDisabled="True"/>
+        <Button Grid.Column="2" Content="..." Command="{Binding Command, ElementName=ImageSrc}"/>
+    </Grid>
+</UserControl>

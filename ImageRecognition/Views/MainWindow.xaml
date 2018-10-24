@@ -1,0 +1,75 @@
+﻿<Window x:Class="ImageRecognition.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:ImageRecognition.Controls"
+        xmlns:prism="http://prismlibrary.com/"
+        prism:ViewModelLocator.AutoWireViewModel="True"
+        Title="{Binding Title}" Height="800" Width="1000">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal">
+            <GroupBox x:Name="RadioGroupBox">
+                <GroupBox.Header>
+                    <TextBlock Text="ImageSource"/>
+                </GroupBox.Header>
+                <StackPanel>
+                    <RadioButton x:Name="RbtnCamera" Content="Camera" Command="{Binding CamRbtnCheckedCommand}" IsChecked="{Binding IsCamRbtnChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <RadioButton x:Name="RbtnImage" Content="Image" Command="{Binding ImgRbtnCheckedCommand}" />
+                </StackPanel>
+            </GroupBox>
+            
+            <GroupBox x:Name="CheckGroupBox">
+                <GroupBox.Header>
+                    <TextBlock Text="Indicators"/>
+                </GroupBox.Header>
+                <StackPanel>
+                    <CheckBox x:Name="ChboxKeypoints" Content="Draw keypoints"/>
+                    <CheckBox x:Name="ChboxLines" Content="Draw matching lines"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox x:Name="SourceGroupBox" Visibility="{Binding IsCamRbtnChecked, Converter={StaticResource InvertBoolToVisibilityConv}}">
+                <GroupBox.Header>
+                    <TextBlock Text="Source"/>
+                </GroupBox.Header>
+                <StackPanel>
+                    <controls:ImageSourceControl x:Name="SourceControl" Text="Image scene" Path="{Binding ImgSourcePath}" Command="{Binding SetSceneCommand}" ToolTip="{Binding ImgSourcePath}" ToolTipService.ShowOnDisabled="true"/>
+                    <controls:ImageSourceControl x:Name="PatternControl" Text="Pattern" Path="{Binding ImgPatternPath}" Command="{Binding SetPatternCommand}" ToolTip="{Binding ImgPatternPath}" ToolTipService.ShowOnDisabled="true"/>
+                </StackPanel>
+            </GroupBox>
+
+            <Button VerticalAlignment="Bottom" Margin="2,1" Height="60" Width="100">
+                <TextBlock x:Name="BtnSurf" Text="Perform SURF detection" TextWrapping="Wrap" TextAlignment="Center"/>
+            </Button>
+            
+            <GroupBox x:Name="AdjustGroupBox">
+                <GroupBox.Header>
+                    <TextBlock Text="Adjustment"/>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="200"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="Hessian thresh"/>
+                    <Slider x:Name="SliderHessian" Grid.Row="0" Grid.Column="1" Minimum="300" Maximum="500" Value="450" TickPlacement="BottomRight" TickFrequency="10" IsSnapToTickEnabled="True"/>
+                    
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Uniqueness"/>
+                    <Slider x:Name="SliderUniqueness" Grid.Row="1" Grid.Column="1" Minimum="0.5" Maximum="1" Value="0.8" TickPlacement="BottomRight" TickFrequency="0.025" IsSnapToTickEnabled="True"/>
+                </Grid>
+
+            </GroupBox>
+        </StackPanel>
+
+        <Image Grid.Row="1" x:Name="Img" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Source="{Binding ImageScene}"/>
+    </Grid>
+</Window>
