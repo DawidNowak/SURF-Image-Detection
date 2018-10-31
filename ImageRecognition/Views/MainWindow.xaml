@@ -18,7 +18,7 @@
                 </GroupBox.Header>
                 <StackPanel>
                     <RadioButton x:Name="RbtnCamera" Content="Camera" Command="{Binding CamRbtnCheckedCommand}" IsChecked="{Binding IsCamRbtnChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                    <RadioButton x:Name="RbtnImage" Content="Image" Command="{Binding ImgRbtnCheckedCommand}" />
+                    <RadioButton x:Name="RbtnImage" Content="Image" Command="{Binding ImgRbtnCheckedCommand}" IsChecked="{Binding IsImgRBtnChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                 </StackPanel>
             </GroupBox>
             
@@ -27,8 +27,8 @@
                     <TextBlock Text="Indicators"/>
                 </GroupBox.Header>
                 <StackPanel>
-                    <CheckBox x:Name="ChboxKeypoints" Content="Draw keypoints"/>
-                    <CheckBox x:Name="ChboxLines" Content="Draw matching lines"/>
+                    <CheckBox x:Name="ChboxKeypoints" Content="Draw keypoints" IsChecked="{Binding DrawKeyPoints}"/>
+                    <CheckBox x:Name="ChboxLines" Content="Draw matching lines" IsChecked="{Binding DrawMatchLines}"/>
                 </StackPanel>
             </GroupBox>
 
@@ -42,8 +42,8 @@
                 </StackPanel>
             </GroupBox>
 
-            <Button VerticalAlignment="Bottom" Margin="2,1" Height="60" Width="100">
-                <TextBlock x:Name="BtnSurf" Text="Perform SURF detection" TextWrapping="Wrap" TextAlignment="Center"/>
+            <Button VerticalAlignment="Bottom" Margin="2,1" Height="60" Width="100" Command="{Binding PerformSurfDetectionCommand}">
+                <TextBlock x:Name="BtnSurf" Text="{Binding SurfButtonText}" TextWrapping="Wrap" TextAlignment="Center"/>
             </Button>
             
             <GroupBox x:Name="AdjustGroupBox">
@@ -61,10 +61,10 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Text="Hessian thresh"/>
-                    <Slider x:Name="SliderHessian" Grid.Row="0" Grid.Column="1" Minimum="300" Maximum="500" Value="450" TickPlacement="BottomRight" TickFrequency="10" IsSnapToTickEnabled="True"/>
+                    <Slider x:Name="SliderHessian" Grid.Row="0" Grid.Column="1" Minimum="300" Maximum="500" Value="{Binding HessianThresh, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TickPlacement="BottomRight" TickFrequency="10" IsSnapToTickEnabled="True"/>
                     
                     <TextBlock Grid.Row="1" Grid.Column="0" Text="Uniqueness"/>
-                    <Slider x:Name="SliderUniqueness" Grid.Row="1" Grid.Column="1" Minimum="0.5" Maximum="1" Value="0.8" TickPlacement="BottomRight" TickFrequency="0.025" IsSnapToTickEnabled="True"/>
+                    <Slider x:Name="SliderUniqueness" Grid.Row="1" Grid.Column="1" Minimum="50" Maximum="100" Value="{Binding Uniqueness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TickPlacement="BottomRight" TickFrequency="2.5" IsSnapToTickEnabled="True"/>
                 </Grid>
 
             </GroupBox>
