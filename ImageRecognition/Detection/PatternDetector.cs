@@ -26,8 +26,7 @@ namespace ImageRecognition.Detection
 		}
 		#endregion construction
 
-		#region properties
-
+		#region propertiess
 		public double HessianThresh { get; set; } = 450d;
 		public double Uniqueness { get; set; } = 0.95;
 		public bool DrawKeyPoints { get; set; } = true;
