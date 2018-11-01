@@ -40,7 +40,6 @@ namespace ImageRecognition.ViewModels
 
 		#region properties
 		private string _title;
-
 		public string Title
 		{
 			get => _title;
@@ -48,7 +47,6 @@ namespace ImageRecognition.ViewModels
 		}
 
 		private string _surfButtonText = "Perform SURF detection";
-
 		public string SurfButtonText
 		{
 			get => _surfButtonText;
@@ -56,7 +54,6 @@ namespace ImageRecognition.ViewModels
 		}
 
 		private Image<Bgr, byte> _imgSource;
-
 		public Image<Bgr, byte> ImgSource
 		{
 			get => _imgSource;
@@ -68,7 +65,6 @@ namespace ImageRecognition.ViewModels
 		}
 
 		private string _imgSourcePath = "...";
-
 		public string ImgSourcePath
 		{
 			get => _imgSourcePath;
@@ -76,7 +72,6 @@ namespace ImageRecognition.ViewModels
 		}
 
 		private Image<Bgr, byte> _imgPattern;
-
 		public Image<Bgr, byte> ImgPattern
 		{
 			get => _imgPattern;
@@ -88,7 +83,6 @@ namespace ImageRecognition.ViewModels
 		}
 
 		private string _imgPatternPath = "...";
-
 		public string ImgPatternPath
 		{
 			get => _imgPatternPath;
@@ -107,7 +101,6 @@ namespace ImageRecognition.ViewModels
 		}
 
 		private bool _isImgRbtnChecked;
-
 		public bool IsImgRBtnChecked
 		{
 			get => _isImgRbtnChecked;
@@ -119,7 +112,6 @@ namespace ImageRecognition.ViewModels
 		}
 
 		private ImageSource _imageScene;
-
 		public ImageSource ImageScene
 		{
 			get => _imageScene;
@@ -127,35 +119,48 @@ namespace ImageRecognition.ViewModels
 		}
 
 		private double _hessianThresh = 450d;
-
 		public double HessianThresh
 		{
 			get => _hessianThresh;
-			set => SetProperty(ref _hessianThresh, value);
+			set
+			{
+				SetProperty(ref _hessianThresh, value);
+				_detector.HessianThresh = value;
+			}
 		}
 
 		private double _uniqueness = 95d;
-
 		public double Uniqueness
 		{
 			get => _uniqueness;
-			set => SetProperty(ref _uniqueness, value);
+			set
+			{
+				SetProperty(ref _uniqueness, value);
+				_detector.Uniqueness = value / 100;
+			}
 		}
 
 		private bool _drawKeyPoints = true;
-
 		public bool DrawKeyPoints
 		{
 			get => _drawKeyPoints;
-			set => SetProperty(ref _drawKeyPoints, value);
+			set
+			{
+				SetProperty(ref _drawKeyPoints, DrawMatchLines || value);
+				_detector.DrawKeyPoints = DrawKeyPoints;
+			}
 		}
 
 		private bool _drawMatchLines = true;
-
 		public bool DrawMatchLines
 		{
 			get => _drawMatchLines;
-			set => SetProperty(ref _drawMatchLines, value);
+			set
+			{
+				SetProperty(ref _drawMatchLines, value);
+				if (value) DrawKeyPoints = true;
+				_detector.DrawMatchLines = value;
+			}
 		}
 		#endregion properties
 
@@ -204,26 +209,16 @@ namespace ImageRecognition.ViewModels
 
 		private void PerformSurfDetection()
 		{
-			if (IsCamRbtnChecked)
-			{
-				ImgPattern = ImgSource;
-			}
-			else //ImgRbtnChecked
-			{
-				Detect();
-			}
+			if (IsCamRbtnChecked) ImgPattern = ImgSource;
+			else Detect();
 		}
 
 		private void Detect()
 		{
 			Mat result = null;
-			if (ImgPattern != null)
-			{
-				result = _detector.Recognize(ImgPattern, ImgSource, DrawKeyPoints, DrawMatchLines, HessianThresh, Uniqueness / 100);
-			}
+			if (ImgPattern != null) result = _detector.Recognize(ImgPattern, ImgSource);
 			ImageScene = result != null ? result.ToBitmapSource() : ImgSource.ToBitmapSource();
 		}
-
 		#endregion methods
 	}
 }

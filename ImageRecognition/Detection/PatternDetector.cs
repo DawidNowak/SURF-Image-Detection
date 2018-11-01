@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Emgu.CV;
@@ -14,21 +13,34 @@ namespace ImageRecognition.Detection
 {
 	public class PatternDetector
 	{
+		#region field
 		private readonly MCvScalar _matchColor;
 		private readonly Bgr _indicatorsColor;
+		#endregion field
 
+		#region construction
 		public PatternDetector()
 		{
 			_matchColor = new Bgr(Color.Blue).MCvScalar;
 			_indicatorsColor = new Bgr(Color.White);
 		}
+		#endregion construction
 
-		public Mat Recognize(Image<Bgr, byte> pattern, Image<Bgr, byte> frame, bool drawKeyPoints = true, bool drawMatchLines = true, double hessianThresh = 450d, double uniqueness = 0.8)
+		#region properties
+
+		public double HessianThresh { get; set; } = 450d;
+		public double Uniqueness { get; set; } = 0.95;
+		public bool DrawKeyPoints { get; set; } = true;
+		public bool DrawMatchLines { get; set; } = true;
+		#endregion properties
+
+		#region Methods
+		public Mat Recognize(Image<Bgr, byte> pattern, Image<Bgr, byte> frame)
 		{
 			if (frame == null) return null;
 
 			Mat result;
-			using (var detector = new SURF(hessianThresh))
+			using (var detector = new SURF(HessianThresh))
 			using (var matches = new VectorOfVectorOfDMatch())
 			{
 				var observedKeyPoints = detector.DescribeImage(frame, out var observedDescriptors);
@@ -46,7 +58,7 @@ namespace ImageRecognition.Detection
 				matcher.KnnMatch(observedDescriptors, matches, k, null);
 				var mask = new Mat(matches.Size, 1, DepthType.Cv8U, 1);
 				mask.SetTo(new MCvScalar(255));
-				Features2DToolbox.VoteForUniqueness(matches, uniqueness, mask);
+				Features2DToolbox.VoteForUniqueness(matches, Uniqueness, mask);
 
 				var nonZeroCount = CvInvoke.CountNonZero(mask);
 				if (nonZeroCount >= 4)
@@ -59,12 +71,12 @@ namespace ImageRecognition.Detection
 				}
 
 				result = new Mat();
-				if (drawKeyPoints && drawMatchLines)
+				if (DrawKeyPoints && DrawMatchLines)
 				{
 					Features2DToolbox.DrawMatches(pattern, modelKeyPoints, frame, observedKeyPoints,
 						matches, result, _indicatorsColor.MCvScalar, _indicatorsColor.MCvScalar, mask);
 				}
-				else if (drawKeyPoints)
+				else if (DrawKeyPoints)
 				{
 					var temp = new Mat();
 					Features2DToolbox.DrawKeypoints(frame, observedKeyPoints, result, _indicatorsColor);
@@ -72,16 +84,13 @@ namespace ImageRecognition.Detection
 					var merged = result.ToImage<Bgr, byte>().ConcateHorizontal(temp.ToImage<Bgr, byte>());
 					result = merged.Mat;
 				}
-				else if (!drawMatchLines)
+				else if (!DrawMatchLines || homography == null)
 				{
 					result = frame.ConcateHorizontal(pattern).Mat;
 				}
-				else
-				{
-					//should not get here
-				}
 
-				if (homography == null) return null;
+				if (homography == null)
+					return result;
 				//draw a rectangle along the projected model
 				var rect = new Rectangle(Point.Empty, pattern.Size);
 				PointF[] pts =
@@ -94,9 +103,9 @@ namespace ImageRecognition.Detection
 				pts = CvInvoke.PerspectiveTransform(pts, homography);
 
 				var points = Array.ConvertAll<PointF, Point>(pts, Point.Round);
-				var angles = points.Select((p, i) => GetAngle(points[i % 4], points[(i + 1) % 4], points[(i + 2) % 4]))
+				var angles = points.Select((p, i) => SurfHelper.GetAngle(points[i % 4], points[(i + 1) % 4], points[(i + 2) % 4]))
 					.ToArray();
-				var isMatch = IsMatch(angles);
+				var isMatch = SurfHelper.IsMatch(angles);
 				if (isMatch)
 				{
 					using (var vp = new VectorOfPoint(points))
@@ -108,34 +117,6 @@ namespace ImageRecognition.Detection
 
 			return result;
 		}
-
-		private static double GetAngle(Point a, Point b, Point c)
-		{
-			var ab = GetDist(a, b);
-			var bc = GetDist(b, c);
-			var ac = GetDist(a, c);
-			var cosB = Math.Pow(ac, 2) - Math.Pow(ab, 2) - Math.Pow(bc, 2);
-			cosB = cosB / (2 * ab * bc);
-			return 180 - Math.Acos(cosB) * 180 / Math.PI;
-		}
-
-		private static double GetDist(Point a, Point b) => Math.Sqrt(Math.Pow(a.X - b.X, 2) + Math.Pow(a.Y - b.Y, 2));
-
-		private static bool IsMatch(IReadOnlyCollection<double> angles)
-		{
-			const int anglesEpsilon = 20;
-			const int epsilon = 40;
-			if (angles.Count != 4) return false;
-
-			var evenSum = angles.Where((a, i) => i % 2 == 0).Sum();
-			var oddSum = angles.Where((a, i) => i % 2 != 0).Sum();
-
-			var isMatch = Math.Abs(evenSum - 180) <= anglesEpsilon && Math.Abs(oddSum - 180) <= anglesEpsilon;
-
-			if (isMatch && angles.Any(a => Math.Abs(a - 90) > epsilon))
-				return false;
-
-			return isMatch;
-		}
+		#endregion Methods
 	}
 }
